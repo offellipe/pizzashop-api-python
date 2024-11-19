@@ -1,7 +1,7 @@
-{
-    "files.exclude": {
-        "**/*.pyc": { "when": "$(basename).py" },
-        "**/__pycache__": true,
-        ".pytest_cache": true,
-    }
-}
+// {
+//     "files.exclude": {
+//         "**/*.pyc": { "when": "$(basename).py" },
+//         "**/__pycache__": true,
+//         ".pytest_cache": true,
+//     }
+// }
