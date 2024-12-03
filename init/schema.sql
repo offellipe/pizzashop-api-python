@@ -40,3 +40,24 @@ CREATE TABLE orders (
     total_in_cents INTEGER NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE evaluations (
+    id TEXT PRIMARY KEY,
+    customer_id TEXT NOT NULL,
+    restaurant_id TEXT NOT NULL,
+    rate INTEGER NOT NULL,
+    comment TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES users (id),
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants (id)
+);
+
+CREATE TABLE order_items (
+    id TEXT PRIMARY KEY,
+    order_id TEXT NOT NULL,
+    product_id TEXT,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    price_in_cents INTEGER NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE SET NULL
+);
