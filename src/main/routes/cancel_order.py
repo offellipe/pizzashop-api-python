@@ -7,29 +7,35 @@ from src.models.sqlite.settings.connection import db_connection_handler
 from src.main.routes.blueprint_routes.orders_bluprint import orders_blueprint
 
 
-@orders_blueprint.route("/orders/<string:order_id>/approve", methods=["PATCH"])
+@orders_blueprint.route("/orders/<string:order_id>/cancel", methods=["PATCH"])
 @authenticate_user  # Middleware para autenticação
-def approve_order(order_id):
+def cancel_order(order_id):
     try:
         # Obtém o restaurante gerenciado pelo usuário autenticado
         restaurant_id = get_managed_restaurant_id()
 
+        if not restaurant_id:
+            abort(401, description="User is not a restaurant manager.")  # Unauthorized # noqa
+
         # Verificar se o pedido pertence ao restaurante gerenciado
         session: Session = db_connection_handler()
         order = session.query(OrderRepository).filter(
-                OrderRepository.id == order_id,
-                OrderRepository.restaurant_id == restaurant_id,
+            OrderRepository.id == order_id,
+            OrderRepository.restaurant_id == restaurant_id
         ).first()
 
         if not order:
-            abort(403, description="Unauthorized")  # Lançar erro 403 se o pedido não existir ou não pertencer # noqa
+            abort(401, description="Order not found under the user managed restaurant.")  # Unauthorized # noqa
 
         # Verificar o status do pedido
-        if order.status != "pending":
-            return jsonify({"message": "Order was already approved before."}), 400 # noqa
+        if order.status not in ["pending", "processing"]:
+            return jsonify({
+                "code": "STATUS_NOT_VALID",
+                "message": "O pedido não pode ser cancelado depois de ser enviado." # noqa
+            }), 400
 
-        # Atualizar o status do pedido para 'processing'
-        order.status = "processing"
+        # Atualizar o status do pedido para 'canceled'
+        order.status = "canceled"
         session.commit()
 
         # Retornar status 204 (No Content)
